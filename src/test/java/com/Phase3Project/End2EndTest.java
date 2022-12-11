@@ -1,6 +1,7 @@
 package com.Phase3Project;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testng.Assert;
@@ -19,6 +20,7 @@ public class End2EndTest {
 	int salary = 4000;
 	String baseURI = "http://localhost:3000" ;
 	public static int EmpId;
+	JsonPath jpath ;
 	
 	@Test
 	public void TestEmp() {
@@ -55,16 +57,26 @@ public class End2EndTest {
 		response = GetSingleEmployee(EmpId) ;
 		ResponseBody = response.getBody().asString();
 		Assert.assertTrue(ResponseBody.contains("Smith"));
-//		Assert.assertEquals(Empnames.get(EmpId), "Smith");
+
 		
 		// Delete Created Employee
 		
 		response=DeleteEmployee(EmpId);
 		Assert.assertEquals(200, response.getStatusCode());
 		
-		
-		
-		
+		//Check deleted Employee in Employee List
+				response = GetAllEmployees();
+				ResponseBody = response.getBody().asString();		
+				jpath = response.jsonPath();
+				List<String> names = jpath.get("name");
+				for(int i=0;i<names.size();i++) {
+					Assert.assertNotEquals(names.get(i), "Smith");
+				}
+				response = GetSingleEmployee(EmpId) ;
+				int statusCode= response.getStatusCode();
+				
+				Assert.assertEquals(404,statusCode);
+				
 	}
 
 	public Response GetAllEmployees() {
@@ -81,7 +93,7 @@ public class End2EndTest {
 		RestAssured.baseURI = this.baseURI;
 		request = RestAssured.given();
 		
-		Response response = request.param("id", EmpID).get("employees");
+		Response response = request.param("id", EmpID).get("employees/"+EmpID);
 
 		return response;
 	}
@@ -101,7 +113,7 @@ public class End2EndTest {
 				.body(MapObj)
 				.post("employees");
 
-		JsonPath jpath = response.jsonPath();
+		jpath = response.jsonPath();
 		EmpId = jpath.get("id");
 		return response;
 

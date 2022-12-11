@@ -93,7 +93,7 @@ public class End2EndTest {
 		RestAssured.baseURI = this.baseURI;
 		request = RestAssured.given();
 		
-		Response response = request.param("id", EmpID).get("employees/"+EmpID);
+		response = request.param("id", EmpID).get("employees/"+EmpID);
 
 		return response;
 	}
